@@ -1,0 +1,54 @@
+import time
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+import ipywidgets as wg
+from ipywidgets import interact
+
+def dhdt(h,t):
+    A = np.pi * h#[0] #Área da seção transversal do tanque (m^2)
+    a = 4/10000 #Área da seção transversal do cano de saída (m^2)
+    g = 9.8 #Aceleração da gravidade (m/s^2)
+    u = 0.1 #Vazão de entrada (m^3/s)
+    return (-a*math.sqrt(2*g/h)+u/h)*(1/np.pi)
+
+def rk4 (n):    
+    t_0 = 0 #tempo inicial (s)
+    t_f = 500 #input('Inserir o tempo final ')
+    
+    n = int(n)
+    t_f = int(t_f)
+    delta_t = (t_f-t_0)/n
+
+    h_0 = 1
+
+    h = [h_0]
+    t = [t_0]
+
+    h_prox = h[0]
+    t_prox = t[0]
+
+    for i in range(n):
+        k_1 = dhdt(h_0,t_0)
+        k_2 = dhdt(h_0+(delta_t*k_1)/2, t_0+delta_t/2)
+        k_3 = dhdt(h_0+(delta_t*k_2)/2, t_0+delta_t/2)
+        k_4 = dhdt(h_0+(delta_t*k_3), t_0 +delta_t)
+        h_0 = h_0 + (delta_t/6)*(k_1 + 2*k_2 + 2*k_3 + k_4)
+        h.append(h_0)
+        t_0 = t_0 + delta_t
+        t.append(t_0)
+        if  abs(h_0-4)< abs(h[i-1]-4):
+           h_prox = h_0
+           t_prox = t_0
+           
+    print (h_prox)
+    print (t_prox)
+    
+    plt.plot(t,h)
+    plt.plot(t_prox,h_prox,'ro')
+    plt.ylabel(' h (em metros)')
+    plt.xlabel(' t (em segundos)')
+    plt.show()
+
+    n_slide = wg.IntSlider(value=1, min= 10, max=100, step=1)    
+    interact(rk4,n=n_slide)
